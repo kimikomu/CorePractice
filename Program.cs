@@ -1,3 +1,5 @@
+using MinimalAPIs;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -36,48 +38,20 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
-var todos = new Dictionary<string, TodoItem>
-{
-    { "1", new TodoItem("1", "Sample Task 1", false) },
-    { "2", new TodoItem("2", "Sample Task 2", true) }
-};
+TodoHandlers handlers = new();
 
-// GET
-// 1. An endpoint to get all TODO items at the route /todo
-app.MapGet("/todo", () => todos.Values);
-// 2. An endpoint to get a TODO item by its ID at the route /todo/{id}
-app.MapGet("/todo/{id}", (string id) => todos.GetValueOrDefault(id));
-
-// POST
-// An endpoint to add a new todo item to todos
-app.MapPost("/todo", (TodoItem todo) =>
-{
-    string id = Guid.NewGuid().ToString();
-    var newTodo = new TodoItem(id, todo.Description, todo.IsCompleted);
-    todos.Add(id, newTodo);
-    return Results.Created($"/todo/{id}", id);
-});
-
-// PUT
-// An endpoint to update a todo by id
-app.MapPut("/todo/{id}", (TodoItem todo) =>
-{
-    todos[todo.Id] = todo;
-    Results.Accepted("/todo/{id}", todo.Id);
-});
-
-// DELETE
-// An endpoint to remove a todo by id
-app.MapDelete("/todo/{id}", (string id) =>
-{
-    todos.Remove(id);
-    Results.Accepted("/todo");
-});
+app.MapGet("/todo", handlers.GetAllToDos);
+app.MapGet("/todo/{id}", handlers.GetToDo);
+app.MapPost("/todo", handlers.AddToDo);
+app.MapPut("/todo/{id}", handlers.ReplaceTodo);
+app.MapDelete("/todo/{id}", handlers.DeleteToDo);
 
 app.Run();
 
-public record TodoItem(string Id, string Description, bool IsCompleted);
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+namespace MinimalAPIs
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+    {
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
 }
