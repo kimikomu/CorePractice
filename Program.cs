@@ -38,13 +38,19 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
-TodoHandlers handlers = new();
+TodoHandlers todoHandlers = new();
 
-app.MapGet("/todo", handlers.GetAllToDos);
-app.MapGet("/todo/{id}", handlers.GetToDo);
-app.MapPost("/todo", handlers.AddToDo);
-app.MapPut("/todo/{id}", handlers.ReplaceTodo);
-app.MapDelete("/todo/{id}", handlers.DeleteToDo);
+app.MapGet("/todo", todoHandlers.GetAllToDos);
+app.MapGet("/todo/{id}", todoHandlers.GetToDo);
+app.MapPost("/todo", todoHandlers.AddToDo);
+app.MapPut("/todo/{id}", todoHandlers.ReplaceTodo);
+app.MapDelete("/todo/{id}", todoHandlers.DeleteToDo);
+
+FileHandlers fileHandlers = new();
+
+app.MapGet("/file", fileHandlers.DownloadFile);
+app.MapGet("/bytes", fileHandlers.DownloadBytes);
+app.MapGet("/stream", fileHandlers.DownloadStream);
 
 app.Run();
 

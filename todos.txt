@@ -1,0 +1,2 @@
+1. Learn ASP.NET Core
+2. Build a sample project
