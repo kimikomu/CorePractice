@@ -10,11 +10,20 @@ public class TodoHandlers
     
     public IResult GetToDo(string id)
     {
-        return TodoItem.All.TryGetValue(id, out var todo) ? Results.Ok(todo) : Results.NotFound();
+        return TodoItem.All.TryGetValue(id, out var todo) 
+            ? Results.Ok(todo) 
+            : Results.Problem(detail: $"Todo item with ID {id} was not found", statusCode: 404, title: "Not Found", instance: $"/todo/{id}");
     }
     
     public IResult AddToDo(TodoItem todo)
     {
+        if (String.IsNullOrWhiteSpace(todo.Description))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                { "Description", new[] { "Description is required." } }
+            });
+        }
         string id = Guid.NewGuid().ToString();
         var newTodo = todo with { Id = id };
         return TodoItem.All.TryAdd(id, newTodo)
