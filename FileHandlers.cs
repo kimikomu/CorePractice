@@ -6,7 +6,7 @@ public class FileHandlers
 {
     public IResult DownloadFile()
     {
-        var filePath = "/usercode/FILESYSTEM/MinimalAPIs/todos.txt"; // Ensure this file exists with some content
+        var filePath = "/repos/CorePractice/todos.txt"; // Ensure this file exists with some content
         var contentType = "text/plain";
         return Results.File(filePath, contentType, "todos.txt");
     }
@@ -15,7 +15,7 @@ public class FileHandlers
     {
         var todos = "1. Learn ASP.Net Core\n2. Build a web application.";
         var bytes = Encoding.UTF8.GetBytes(todos);
-        return Results.Bytes(bytes, "application/octet-stream", "todos.bin");
+        return Results.Bytes(bytes, "application/octet-stream", "todosBytesTest.txt");
     }
 
     public IResult DownloadStream()
@@ -26,6 +26,6 @@ public class FileHandlers
         writer.Flush();
         stream.Position = 0;
 
-        return Results.Stream(stream, "application/octet-stream", "todos.txt");
+        return Results.Stream(stream, "application/octet-stream", "todosStreamTest.txt");
     }
 }
