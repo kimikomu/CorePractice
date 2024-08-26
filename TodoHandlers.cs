@@ -3,13 +3,13 @@ namespace MinimalAPIs;
 
 public class TodoHandlers
 {
-    public IEnumerable<TodoItem> GetAllToDos()
-    {
-        return TodoItem.All.Values;
-    }
-    
     public IResult GetToDo(string id)
     {
+        if (id == "all")
+        {
+            return Results.Ok(TodoItem.All.Values);
+        }
+        
         return TodoItem.All.TryGetValue(id, out var todo) 
             ? Results.Ok(todo) 
             : Results.Problem(detail: $"Todo item with ID {id} was not found", statusCode: 404, title: "Not Found", instance: $"/todo/{id}");

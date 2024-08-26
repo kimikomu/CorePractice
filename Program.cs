@@ -61,8 +61,7 @@ app.MapGet("/todo/{todoId}/{humanReadableTitle?}", (int todoId, string? humanRea
 
 TodoHandlers todoHandlers = new();
 
-app.MapGet("/todo", todoHandlers.GetAllToDos);
-app.MapGet("/todo/{id}", todoHandlers.GetToDo);
+app.MapGet("/todo/{id=all}", todoHandlers.GetToDo);
 app.MapPost("/todo", todoHandlers.AddToDo);
 app.MapPut("/todo/{id}", todoHandlers.ReplaceTodo);
 app.MapDelete("/todo/{id}", todoHandlers.DeleteToDo);
