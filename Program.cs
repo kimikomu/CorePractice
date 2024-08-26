@@ -24,6 +24,41 @@ app.MapGet("/weatherforecast", forecastHandler.GetForecast)
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
+
+var todos = new List<Todo>
+{
+    new Todo { TodoId = 1, Title = "Learn ASP.NET Core", Status = "completed" },
+    new Todo { TodoId = 2, Title = "Build a web application", Status = "pending" }
+};
+
+app.MapGet("/todo/status/{status=all}", (string status) =>
+{
+    var filteredTodos = status.ToLower() switch
+    {
+        "completed" => todos.Where(t => t.Status == "completed"),
+        "pending" => todos.Where(t => t.Status == "pending"),
+        _ => todos
+    };
+
+    return Results.Ok(filteredTodos);
+});
+
+app.MapGet("/todo/{todoId}/{humanReadableTitle?}", (int todoId, string? humanReadableTitle) =>
+{
+    var todo = todos.FirstOrDefault(t => t.TodoId == todoId);
+    if (todo == null)
+    {
+        return Results.NotFound(new { message = "Todo not found." });
+    }
+
+    if (!string.IsNullOrEmpty(humanReadableTitle))
+    {
+        Console.WriteLine(humanReadableTitle);
+    }
+    
+    return Results.Ok(todo);
+});
+
 TodoHandlers todoHandlers = new();
 
 app.MapGet("/todo", todoHandlers.GetAllToDos);
