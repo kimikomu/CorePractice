@@ -43,7 +43,7 @@ app.MapGet("/todo/status/{status=all}", (string status) =>
     return Results.Ok(filteredTodos);
 });
 
-app.MapGet("/todo/{todoId}/{humanReadableTitle?}", (Guid todoId, string? humanReadableTitle) =>
+app.MapGet("/todo/{todoId:guid}/{humanReadableTitle?}", (Guid todoId, string? humanReadableTitle) =>
 {
     var todo = todos.FirstOrDefault(t => t.TodoId == todoId);
     if (todo == null)
@@ -61,10 +61,10 @@ app.MapGet("/todo/{todoId}/{humanReadableTitle?}", (Guid todoId, string? humanRe
 
 TodoHandlers todoHandlers = new();
 
-app.MapGet("/todo/{id=all}", todoHandlers.GetToDo);
+app.MapGet("/todo/{id=all:guid}", todoHandlers.GetToDo);
 app.MapPost("/todo", todoHandlers.AddToDo);
-app.MapPut("/todo/{id}", todoHandlers.ReplaceTodo);
-app.MapDelete("/todo/{id}", todoHandlers.DeleteToDo);
+app.MapPut("/todo/{id:guid}", todoHandlers.ReplaceTodo);
+app.MapDelete("/todo/{id:guid}", todoHandlers.DeleteToDo);
 
 FileHandlers fileHandlers = new();
 
@@ -95,7 +95,7 @@ app.MapGet("/users/{userId}/todo", (int userId) =>
     return Results.Problem(detail: "User not found", statusCode: 404);
 });
 
-app.MapGet("/users/{userId}/todo/{todoId}", (int userId, Guid todoId) => 
+app.MapGet("/users/{userId}/todo/{todoId:guid}", (int userId, Guid todoId) => 
 {
     if (!users.Any(u => u.UserId == userId))
     {
