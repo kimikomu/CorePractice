@@ -3,11 +3,16 @@ namespace MinimalAPIs;
 
 public class TodoHandlers
 {
-    public IResult GetToDo(string id)
+    public IResult GetToDo(string id, string? humanReadableTitle)
     {
         if (id == "all")
         {
             return Results.Ok(TodoItem.All.Values);
+        }
+
+        if (!string.IsNullOrEmpty(humanReadableTitle))
+        {
+            Console.WriteLine(humanReadableTitle);
         }
         
         return TodoItem.All.TryGetValue(id, out var todo) 

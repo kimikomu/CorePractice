@@ -27,8 +27,9 @@ app.MapGet("/weatherforecast", forecastHandler.GetForecast)
 
 var todos = new List<Todo>
 {
-    new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), Title = "Learn ASP.NET Core", Status = "completed" },
-    new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb7"), Title = "Build a web application", Status = "pending" }
+    new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), Title = "Learn ASP.NET Core", Status = "completed", Categories = new List<string> { "learning", "programming" } },
+    new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb7"), Title = "Build a web application", Status = "pending", Categories = new List<string> { "front end", "back end" } },
+    new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb8"), Title = "Write documentation", Status = "pending", Categories = new List<string> { "work", "writing" } }
 };
 
 app.MapGet("/todo/status/{status=all}", (string status) =>
@@ -59,9 +60,22 @@ app.MapGet("/todo/{todoId:guid}/{humanReadableTitle?}", (Guid todoId, string? hu
     return Results.Ok(todo);
 });
 
+app.MapGet("/todo/categories/{**categories}", (string? categories) =>
+{
+    if (string.IsNullOrEmpty(categories))
+    {
+        return Results.Ok(todos);
+    }
+
+    var categoryList = categories.Split('/').Select(c => c.ToLower()).ToList();
+    var filteredToDos = todos.Where(todo => todo.Categories.Any(cat => categoryList.Contains(cat.ToLower()))).ToList();
+
+    return Results.Ok(filteredToDos);
+});
+
 TodoHandlers todoHandlers = new();
 
-app.MapGet("/todo/{id=all:guid}", todoHandlers.GetToDo);
+app.MapGet("/todo/{id=all:guid}/{humanReadableTitle?}", todoHandlers.GetToDo);
 app.MapPost("/todo", todoHandlers.AddToDo);
 app.MapPut("/todo/{id:guid}", todoHandlers.ReplaceTodo);
 app.MapDelete("/todo/{id:guid}", todoHandlers.DeleteToDo);
