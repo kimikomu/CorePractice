@@ -24,61 +24,14 @@ app.MapGet("/weatherforecast", forecastHandler.GetForecast)
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
-
-var todos = new List<Todo>
-{
-    new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"), Title = "Learn ASP.NET Core", Status = "completed", Categories = new List<string> { "learning", "programming" } },
-    new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb7"), Title = "Build a web application", Status = "pending", Categories = new List<string> { "front end", "back end" } },
-    new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb8"), Title = "Write documentation", Status = "pending", Categories = new List<string> { "work", "writing" } }
-};
-
-app.MapGet("/todo/status/{status=all}", (string status) =>
-{
-    var filteredTodos = status.ToLower() switch
-    {
-        "completed" => todos.Where(t => t.Status == "completed"),
-        "pending" => todos.Where(t => t.Status == "pending"),
-        _ => todos
-    };
-
-    return Results.Ok(filteredTodos);
-});
-
-app.MapGet("/todo/{todoId:guid}/{humanReadableTitle?}", (Guid todoId, string? humanReadableTitle) =>
-{
-    var todo = todos.FirstOrDefault(t => t.TodoId == todoId);
-    if (todo == null)
-    {
-        return Results.NotFound(new { message = "Todo not found." });
-    }
-
-    if (!string.IsNullOrEmpty(humanReadableTitle))
-    {
-        Console.WriteLine(humanReadableTitle);
-    }
-    
-    return Results.Ok(todo);
-});
-
-app.MapGet("/todo/categories/{**categories}", (string? categories) =>
-{
-    if (string.IsNullOrEmpty(categories))
-    {
-        return Results.Ok(todos);
-    }
-
-    var categoryList = categories.Split('/').Select(c => c.ToLower()).ToList();
-    var filteredToDos = todos.Where(todo => todo.Categories.Any(cat => categoryList.Contains(cat.ToLower()))).ToList();
-
-    return Results.Ok(filteredToDos);
-});
-
 TodoHandlers todoHandlers = new();
 
 app.MapGet("/todo/{id=all:guid}/{humanReadableTitle?}", todoHandlers.GetToDo);
 app.MapPost("/todo", todoHandlers.AddToDo);
 app.MapPut("/todo/{id:guid}", todoHandlers.ReplaceTodo);
 app.MapDelete("/todo/{id:guid}", todoHandlers.DeleteToDo);
+app.MapGet("/todo/status/{status=all}", todoHandlers.GetStatus);
+app.MapGet("/todo/categories/{**categories}", todoHandlers.GetCategories);
 
 FileHandlers fileHandlers = new();
 
@@ -86,42 +39,9 @@ app.MapGet("/file", fileHandlers.DownloadFile);
 app.MapGet("/bytes", fileHandlers.DownloadBytes);
 app.MapGet("/stream", fileHandlers.DownloadStream);
 
-var users = new List<User>
-{
-    new User { UserId = 1, Name = "Alice", Todos = new List<Todo>
-    {
-        new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb1"), Title = "Buy groceries" },
-        new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb2"), Title = "Walk the dog" }
-    }},
-    new User { UserId = 2, Name = "Bob", Todos = new List<Todo>
-    {
-        new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb3"), Title = "Complete assignment" },
-        new Todo { TodoId = Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afb4"), Title = "Call mom" }
-    }}
-};
+UserHandlers userHandlers = new();
 
-app.MapGet("/users/{userId}/todo", (int userId) => 
-{
-    if (users.Any(u => u.UserId == userId))
-    {
-        return Results.Ok(users.Where(u => u.UserId == userId).SelectMany(u => u.Todos));
-    }
-    return Results.Problem(detail: "User not found", statusCode: 404);
-});
-
-app.MapGet("/users/{userId}/todo/{todoId:guid}", (int userId, Guid todoId) => 
-{
-    if (!users.Any(u => u.UserId == userId))
-    {
-        return Results.Problem(detail: "User not found", statusCode: 404);
-    }
-    
-    User thisUser = users.First(u => u.UserId == userId);
-    if (!thisUser.Todos.Any(t => t.TodoId == todoId))
-    {
-        return Results.Problem(detail: "Todo not found", statusCode: 404);
-    }
-    return Results.Ok(thisUser.Todos.FirstOrDefault(t => t.TodoId == todoId));
-});
+app.MapGet("/users/{userId}/todo", userHandlers.GetUser);
+app.MapGet("/users/{userId}/todo/{todoId:guid}", userHandlers.GetUserTodo);
 
 app.Run();
