@@ -42,6 +42,6 @@ app.MapGet("/stream", fileHandlers.DownloadStream);
 UserHandlers userHandlers = new();
 
 app.MapGet("/users/{userId}/todo", userHandlers.GetUser);
-app.MapGet("/users/{userId}/todo/{todoId:guid}", userHandlers.GetUserTodo);
+app.MapGet("/users/{userId}/todo/{todoId}", userHandlers.GetUserTodo);
 
 app.Run();
