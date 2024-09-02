@@ -82,4 +82,16 @@ public class TodoHandlers
 
         return !filteredToDos.Any() ? Results.NoContent() : Results.Ok(filteredToDos);
     }
+
+    public IResult AddMeTest()
+    {
+        var addThisTodo = new Todo(Guid.NewGuid(), "100", "Add Me Todo Test")
+        {
+            Description = "Add Me",
+            Status = "pending",
+            Categories = new List<string>(["Add Me", "Add Me", "Add Me", "Add Me"])
+        };
+
+        return AddToDo(addThisTodo);
+    }
 }
