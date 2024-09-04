@@ -27,11 +27,10 @@ app.MapGet("/weatherforecast", forecastHandler.GetForecast)
 
 TodoHandlers todoHandlers = new();
 
-app.MapGet("/todo/{id=all}/{humanReadableTitle?}", todoHandlers.GetToDo);
-app.MapPost("/todo", todoHandlers.AddToDo);
-app.MapPut("/todo/{id:guid}", todoHandlers.ReplaceTodo);
-app.MapDelete("/todo/{id:guid}", todoHandlers.DeleteToDo);
-app.MapGet("/todo/status/{status=all}", todoHandlers.GetStatus);
+app.MapGet("/todo", todoHandlers.GetToDo);
+app.MapPost("/todo/{id}", todoHandlers.AddToDo);
+app.MapDelete("/todo/{id}", todoHandlers.DeleteToDo);
+app.MapGet("/todo/status/{status}", todoHandlers.GetStatus);
 //app.MapGet("/todo/status", ([FromQuery] string status) => Todo.All.Where(t => t.Value.Status != null && t.Value.Status.Equals(status, StringComparison.Ordinal)));
 app.MapGet("/todo/categories/{**categories}", todoHandlers.GetCategories);
 

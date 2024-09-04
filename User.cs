@@ -15,12 +15,12 @@ public record User(int UserId, string Name, List<Todo>? Todos)
     static User()
     {
         All.TryAdd(1, new User(1, "Mike", [
-            new Todo(Guid.NewGuid(), "10", "Buy groceries"), 
-            new Todo(Guid.NewGuid(), "11", "Art")
+            new Todo(Guid.NewGuid().ToString(), "Buy groceries"), 
+            new Todo(Guid.NewGuid().ToString(), "Art")
         ]));
         All.TryAdd(2, new User(2, "Max", [
-            new Todo(Guid.NewGuid(), "12", "What the Heck"), 
-            new Todo(Guid.NewGuid(), "13", "Vacuum")
+            new Todo(Guid.NewGuid().ToString(), "What the Heck"), 
+            new Todo(Guid.NewGuid().ToString(), "Vacuum")
         ]));
     }
 }

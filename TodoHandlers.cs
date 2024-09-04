@@ -1,51 +1,47 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+
 namespace MinimalAPIs;
 
 public class TodoHandlers
 {
-    public IResult GetToDo(string id, string? humanReadableTitle)
+    // Get by Route: "/todo/{id}"
+    public IResult GetToDo(string? id)
     {
-        if (id == "all")
+        id ??= "all";
+        
+        if (string.IsNullOrEmpty(id))
         {
-            return Results.Ok(Todo.All.Values);
+            var todo = Todo.All.FirstOrDefault(t => t.Value.Id == id).Value;
+            return todo != null ? Results.Ok(todo) : Results.Problem(detail: $"Todo item with ID {id} was not found", statusCode: 404, title: "Not Found", instance: $"/todo/{id}");
         }
 
-        if (!string.IsNullOrEmpty(humanReadableTitle))
+        return Results.Ok(Todo.All);
+    }
+    
+    // Post by Body: "/todo"
+    public IResult AddToDo([FromBody]Todo? todo)
+    {
+        // Add new todo if it doesn't exist
+        if (todo == null)
         {
-            Console.WriteLine(humanReadableTitle);
+            string id = Guid.NewGuid().ToString();
+            var newTodo = new Todo(id, "New Todo");
+            
+            return Todo.All.TryAdd(id, newTodo)
+                ? Results.Created($"/todo", newTodo)
+                : Results.BadRequest(new { id = "A Todo item with this id already exists" });
         }
         
-        return Todo.All.TryGetValue(id, out var todo)
-            ? Results.Ok(todo) 
-            : Results.Problem(detail: $"Todo item with ID {id} was not found", statusCode: 404, title: "Not Found", instance: $"/todo/{id}");
-    }
-    
-    public IResult AddToDo(Todo todo)
-    {
-        if (String.IsNullOrWhiteSpace(todo.Title))
+        // update todo if it does exist
+        if (Todo.All.ContainsKey(todo.Id))
         {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                { "Title", new[] { "Title is required." } }
-            });
+            Todo.All[todo.Id] = todo;
+            return Results.Ok(todo);
         }
-
-        Guid todoId = Guid.NewGuid();
-        string id = todoId.ToString();
-        var newTodo = todo with { Id = id, TodoId = todoId, Title = todo.Title, Status = todo.Status, Description = todo.Description };
-        return Todo.All.TryAdd(id, newTodo)
-            ? Results.Created($"/todo/{id}", newTodo)
-            : Results.BadRequest(new { id = "A Todo item with this id already exists" });
-    }
-    
-    public IResult ReplaceTodo(string id, Todo todo)
-    {
-        if (Todo.All.ContainsKey(id))
-        {
-            Todo.All[id] = todo;
-            return Results.NoContent();
-        }
-
-        return Results.NotFound();
+        
+        // todo cannot be updated
+        return Results.NotFound("Todo with this Id does not exist.");
     }
     
     public IResult DeleteToDo(string id)
@@ -53,12 +49,13 @@ public class TodoHandlers
         return Todo.All.TryRemove(id, out _) ? Results.NoContent() : Results.NotFound();
     }
     
-    public IResult GetStatus(string status) 
+    // Get by HttpRequest Query: "/todo"
+    public IResult GetStatus(HttpRequest request) 
     {
-        var filteredTodos = status.ToLower() switch
+        var filteredTodos = request.Query["status"].ToString().ToLower() switch
         {
-            "completed" => Todo.All.Where(t => t.Value.Status == "completed"),
-            "pending" => Todo.All.Where(t => t.Value.Status == "pending"),
+            "completed" => Todo.All.Where(t => t.Value.IsCompleted),
+            "pending" => Todo.All.Where(t => !t.Value.IsCompleted),
             _ => Todo.All
         };
     
@@ -85,7 +82,7 @@ public class TodoHandlers
 
     public IResult AddMeTest()
     {
-        var addThisTodo = new Todo(Guid.NewGuid(), "100", "Add Me Todo Test")
+        var addThisTodo = new Todo(Guid.NewGuid().ToString(), "Add Me Todo Test")
         {
             Description = "Add Me",
             Status = "pending",
